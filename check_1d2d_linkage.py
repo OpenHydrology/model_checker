@@ -1,19 +1,8 @@
-import sys
 import os
-'''
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from qgis.core import *
-from qgis.utils import *
-from qgis.analysis import *
-'''
 
-
-from osgeo import gdal
-from osgeo import osr
+#from osgeo import gdal
+#from osgeo import osr
 from osgeo import ogr
-
-
 
 def excToStr(exc):
     import traceback
@@ -55,7 +44,12 @@ def genListOfIsisReaches(isisDat):
 
 def loadFeatureNames(shpFile):
     items = list()
-    ds = ogr.Open(shpFile)
+    
+    if shpFile.endswith('.shp'):
+      ds = ogr.Open(shpFile)
+    else:
+      driver = ogr.GetDriverByName("MapInfo File")
+      ds = driver.Open(shpFile)
     if ds is None:
         print 'Failed to open', shpFile
         exit(1) 
@@ -94,17 +88,18 @@ def compareLists(areTheseItems,inThisList):
 
 
 def checkLinkage(tuflowNodesFile,tuflowReachesFile,isisDat):
-    listOfTuflowNodes = loadFeatureNames(tuflowNodesFile)            
-    #print listOfTuflowNodes
-    
-    listOfTulfowReaches = loadFeatureNames(tuflowReachesFile)
-    #print listOfTulfowReaches
+    listOfTuflowNodes = loadFeatureNames(tuflowNodesFile)       
     
     listOfISISReaches,listOfISISRiverNodes = genListOfIsisReaches(isisDat)
-    #print listOfISISReaches
-    #print listOfISISRiverNodes
     
-    notFoundReaches = compareLists(listOfTulfowReaches,listOfISISReaches)
+    if tuflowReachesFile is None:
+      notFoundReaches = None
+    else:
+      listOfTulfowReaches = loadFeatureNames(tuflowReachesFile)
+      notFoundReaches = compareLists(listOfTulfowReaches,listOfISISReaches)
+      
+    
+      
     notFoundNodes = compareLists(listOfTuflowNodes,listOfISISRiverNodes)
     
     return notFoundReaches,notFoundNodes
@@ -116,8 +111,6 @@ if __name__ == '__main__':
   isisDat = 'P:\\Glasgow\\WNE\\PROJECTS\\340436-Tamworth\\HydraulicModelling\\04-Initial2DBuild-July2014\\model\\ISIS\\Tame_at_Tamworth_v1.DAT'
 
   
-  try:
-    checkLinkage(nodesFile,reachesFile,isisDat)
 
-  except:
-    print excToStr(sys.exc_info())
+  checkLinkage(nodesFile,reachesFile,isisDat)
+
