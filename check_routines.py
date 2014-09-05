@@ -30,13 +30,12 @@ def identifyFileType(filePath):
 
       notFoundReaches,notFoundNodes = check_1d2d_linkage.checkLinkage(tcf.tcfParameters['nwk_nds'], tcf.tcfParameters['nwk_lines'], ief.iefParameters['datFile'])
       
-      print "Following reach not found in ISIS dat",notFoundReaches
+      print "Following reaches not found in ISIS dat",notFoundReaches
       print "Following nodes not found in ISIS dat",notFoundNodes
-
 
   elif fileName.endswith('.tcf'):
     tcf = TcfCheck()
-    tcf.checkTcf(ief.iefParameters['tcfFile'])
+    tcf.checkTcf(filePath)
     
     for error in tcf.tcfErrors:
       print error
@@ -58,7 +57,6 @@ class IefCheck():
       print "File doesn't exist:", filePath
       return 1 
 
-    
     os.chdir(os.path.split(filePath)[0])
     
     f = open(filePath)
@@ -114,6 +112,7 @@ class TcfCheck():
     self.tcfErrors = list()
     self.tcfParameters = dict()
     self.tcfParameters['bc_db_file'] = None
+    self.tcfParameters['nwk_lines'] = None
     
   def checkTcf(self,filePath):  
     print "Starting to check:",filePath
@@ -122,9 +121,9 @@ class TcfCheck():
       print "File doesn't exist:", filePath
       return 1 
     self.tcfParameters['dir'] = os.path.split(filePath)[0]
+    
     os.chdir(os.path.split(filePath)[0])
   
-    
     f = open(filePath)
     
     for line in f.readlines():
@@ -137,6 +136,8 @@ class TcfCheck():
       
       if line.startswith('shp projection'):
         fname = line.split('==')[-1].replace(' ','').rstrip()
+        if fname.startswith('\\'):
+          fname = fname[1:]
         fname = os.path.abspath(fname)
         if os.path.isfile(fname)==False:
           self.tcfErrors.append(("ERROR projection file (.prj) doesn't exist:", fname))
@@ -146,6 +147,8 @@ class TcfCheck():
       
       elif line.startswith('bc control file'):
         fname = line.split('==')[-1].replace(' ','').rstrip()
+        if fname.startswith('\\'):
+          fname = fname[1:]
         fname = os.path.abspath(fname)
         if os.path.isfile(fname)==False:
           self.tcfErrors.append(("ERROR bc control file (.tbc) doesn't exist:", fname))
@@ -154,6 +157,8 @@ class TcfCheck():
    
       elif line.startswith('geometry control file'):
         fname = line.split('==')[-1].replace(' ','').rstrip()
+        if fname.startswith('\\'):
+          fname = fname[1:]
         fname = os.path.abspath(fname)
         if os.path.isfile(fname)==False:
           self.tcfErrors.append(("ERROR gc control file (.tgc) doesn't exist:", fname))
@@ -162,6 +167,8 @@ class TcfCheck():
     
       elif line.startswith('read materials file'):
         fname = line.split('==')[-1].replace(' ','').rstrip()
+        if fname.startswith('\\'):
+          fname = fname[1:]
         fname = os.path.abspath(fname)
         if os.path.isfile(fname)==False:
           self.tcfErrors.append(("ERROR materials file (.tmf) doesn't exist:", fname))
@@ -171,6 +178,8 @@ class TcfCheck():
    
       elif line.startswith('bc database'):
         fname = line.split('==')[-1].replace(' ','').rstrip()
+        if fname.startswith('\\'):
+          fname = fname[1:]
         fname = os.path.abspath(fname)
         if os.path.isfile(fname)==False:
           self.tcfErrors.append(("ERROR bc databse (bc*.csv) doesn't exist:", fname))
@@ -179,6 +188,8 @@ class TcfCheck():
   
       elif line.startswith('read gis isis network'):
         fname = line.split('==')[-1].replace(' ','').rstrip()
+        if fname.startswith('\\'):
+          fname = fname[1:]
         fname = os.path.abspath(fname)
         if os.path.isfile(fname)==False:
           self.tcfErrors.append(("ERROR gis isis network (1d_nwk_*_L.shp) doesn't exist:", fname))
@@ -187,14 +198,28 @@ class TcfCheck():
   
       elif line.startswith('read gis isis nodes'):
         fname = line.split('==')[-1].replace(' ','').rstrip()
+        if fname.startswith('\\'):
+          fname = fname[1:]
         fname = os.path.abspath(fname)
         if os.path.isfile(fname)==False:
           self.tcfErrors.append(("ERROR gis isis nodes (1d_nd_*_P.shp) doesn't exist:", fname))
         else:
           self.tcfParameters['nwk_nds']=fname
+
+      elif line.startswith('read mi isis nodes'):
+        fname = line.split('==')[-1].replace(' ','').rstrip()
+        if fname.startswith('\\'):
+          fname = fname[1:]
+        fname = os.path.abspath(fname)
+        if os.path.isfile(fname)==False:
+          self.tcfErrors.append(("ERROR mi isis nodes (1d_nd_*.mif) doesn't exist:", fname))
+        else:
+          self.tcfParameters['nwk_nds']=fname
    
       elif line.startswith('read gis isis wll'):
         fname = line.split('==')[-1].replace(' ','').rstrip()
+        if fname.startswith('\\'):
+          fname = fname[1:]
         fname = os.path.abspath(fname)
         if os.path.isfile(fname)==False:
           self.tcfErrors.append(("ERROR gis isis wll (1d_wll_*_L.shp) doesn't exist:", fname))
@@ -203,6 +228,8 @@ class TcfCheck():
         
       elif line.startswith('log folder'):
         path = line.split('==')[-1].replace(' ','').rstrip()
+        if path.startswith('\\'):
+          path = path[1:]
         path = os.path.abspath(path)
         if os.path.isdir(path)==False:
           self.tcfErrors.append(("ERROR log directory doesn't exist:", path))
@@ -211,6 +238,8 @@ class TcfCheck():
    
       elif line.startswith('output folder'):
         path = line.split('==')[-1].replace(' ','').rstrip()
+        if path.startswith('\\'):
+          path = path[1:]
         path = os.path.abspath(path)
         if os.path.isdir(path)==False:
           self.tcfErrors.append(("ERROR output directory doesn't exist:", path))
@@ -219,6 +248,8 @@ class TcfCheck():
   
       elif line.startswith('write check files'):
         path = line.split('==')[-1].replace(' ','').rstrip()
+        if path.startswith('\\'):
+          path = path[1:]       
         path = os.path.abspath(path)
         if os.path.isdir(path)==False:
           self.tcfErrors.append(("ERROR check file directory doesn't exist:", path))
@@ -227,13 +258,13 @@ class TcfCheck():
       
       elif line.startswith('read'):  ## Generic check of other reads
         fname = line.split('==')[-1].replace(' ','').rstrip()
+        if fname.startswith('\\'):
+          fname = fname[1:]
         fname = os.path.abspath(fname)
         if os.path.isfile(fname)==False:
           self.tcfErrors.append(("ERROR unidentified file doesn't exist:", fname))
         else:
           pass # Could check the contents of the file
-    
-    
     
     if self.tcfParameters['tbcFile'] is not None:
       tbcErrors = checkTbc(self.tcfParameters['tbcFile'],self.tcfParameters['bc_db_file'])
@@ -272,6 +303,8 @@ def checkTbc(filePath,bc_db=None):
     
     if line.startswith('read'):  ## Generic check of other reads
       fname = line.split('==')[-1].replace(' ','').rstrip()
+      if fname.startswith('\\'):
+          fname = fname[1:]
       fname = os.path.abspath(fname)
       if os.path.isfile(fname)==False:
         tbcErrors.append(("ERROR unidentified file doesn't exist:", fname))
@@ -287,8 +320,8 @@ def checkTgf(filePath):
   if os.path.isfile(filePath) == False:
     tgcErrors.append("File doesn't exist:", filePath)
     return 1 
+  
   os.chdir(os.path.split(filePath)[0])
-
   
   f = open(filePath)
   
@@ -304,15 +337,21 @@ def checkTgf(filePath):
         fs = line.split('|')
         for f in fs:
           fname = f.split('==')[-1].replace(' ','').rstrip()
+          if fname.startswith('\\'):
+            fname = fname[1:]
           fname = os.path.abspath(fname)
           if os.path.isfile(fname)==False:
             tgcErrors.append(("ERROR file does not exist:", fname))
 
       else:
         fname = line.split('==')[-1].replace(' ','').rstrip()
-        fname = os.path.abspath(fname)
-        if os.path.isfile(fname)==False:
-          tgcErrors.append(("ERROR file does not exist:", fname))
+        if fname.startswith('\\'):
+          fname = fname[1:]
+        absFname = os.path.abspath(fname)
+        if os.path.isfile(absFname)==False:
+          print "Rel:",fname
+          print "Abs:",absFname
+          tgcErrors.append(("ERROR file does not exist:", absFname))
         else:
           pass # Could check the contents of the file
       
@@ -320,20 +359,25 @@ def checkTgf(filePath):
 
 
 if __name__ == '__main__':
-  import sys
-  if len(sys.argv) != 2:
-      print 'Wrong number of parameters'
-      print 'EXAMPLE:   model_checker.exe model.ief'
-      print ''
+  from sys import argv
+  if len(argv) == 1 and argv[0].lower()[-3:] != 'exe':
       # filePath = 'P:\\Glasgow\\WNE\\PROJECTS\\340436-Tamworth\\HydraulicModelling\\04-Initial2DBuild-July2014\\run\\RT_V1_Baseline_100CC_SD2575.tcf'
       # filePath = 'P:\\Glasgow\\WNE\\PROJECTS\\340436-Tamworth\\HydraulicModelling\\04-Initial2DBuild-July2014\\run\\Tame_at_Tamworth_v1_baseline_100CC_SD2575.ief'
       #filePath = 'P:\\Cambridge\\Demeter\\EVT3\\319572_National_Grid_Phase_2\\Technical\\Site_Folders\\SW\\Melksham\\ISIS\\IEF\\Melksham_1000yCC_005_3.ief'
+      filePath = r"P:\Glasgow\WNE\PROJECTS\345488-Riverside,MerthyrTydfil\Hydraulics\v2.0\3 Model\1D\Proposed Model\1000yr\Defended\UpperTaff_v2.0_1D-10m-Proposedv3-AtkinsFlow-1000yr.ief"
+      #filePath = r'P:\Glasgow\WNE\PROJECTS\345488-Riverside,MerthyrTydfil\Hydraulics\v2.0\3 Model\1D\Baseline Model\1000yr\Defended\UpperTaff_v2.0_1D-10m-Baseline-AtkinsFlow-1000yr.ief'
+  elif argv[0].lower() == 'python' and len(argv) != 3:
+      print 'Wrong number of parameters'
+      print 'EXAMPLE:   python check_routines.py model.ief'
+      print ''
+  elif len(argv) != 2:
+      print 'Wrong number of parameters'
+      print 'EXAMPLE:   model_checker.exe model.ief'
+      print ''
   else:
-    filePath = sys.argv[1]
+    filePath = argv[-1]
 
-  identifyFileType(filePath)
-else:
-  print __name__ 
-
+  if filePath is not None:
+    identifyFileType(filePath)
 
   
